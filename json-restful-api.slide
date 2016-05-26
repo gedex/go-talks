@@ -1,0 +1,230 @@
+Building RESTful JSON APIs with Go
+GoJakarta
+26 May 2016
+
+Akeda Bagus
+admin@gedex.web.id
+
+* This talk
+
+- What is RESTful JSON API?
+- Quick introduction to Go
+- Types in Go (heavily about struct)
+- JSON encoding/decoding
+- HTTP server
+- Demo of simple REST-ful JSON APIs
+- More about JSON API
+
+* What is RESTful JSON API?
+
+- Architectural style for designing networked applications
+- Dissertation by Roy Fielding
+- WWW is good example
+- For more detail, google yourself *RE* presentational *S* tate *T* ransfer 
+- *RESTful* is when implementation comforms 6 constraints of REST (Client-server, Stateless, Cacheable, Layered System, Code on demand, and Uniform Interface)
+- *JSON* *API* exposes your service to allow other programs to communicate with JSON format
+- Simple illustration:
+
+  Client Request
+  GET /articles/1.json
+
+  Server Response
+  HTTP/1.1 200 OK
+  {"id": 1, "title": "My Article"}
+
+* What is Go?
+
+- New programming language
+- Compiled, statically typed, and concurrent
+- Started at Google in 2007 by Rob Pike, Ken Thompson, and Robert Griesemer
+- Publicly announced in Nov 2009
+- 1.0 was released in March 2012
+
+* Basic Go program
+
+.play json-restful-api/hello-world.go
+
+* Types in Go
+
+- bool, string, numeric types (uint, int, uint8, uint16, uint32, uint64, float32, float64, etc)
+- array, slice, *struct*, pointer, function, interface
+- See [[https://golang.org/ref/spec#Types]]
+- Today is struct day
+- Struct is a nice way to represent your resource when building REST API
+
+* Struct
+
+* What is struct
+
+Sequence of named elements, called fields, each of which has a name and a type.
+
+.play json-restful-api/struct-part-1.go
+
+* Struct initialization
+
+.play json-restful-api/struct-part-2.go
+
+* Struct initialization (constructor style)
+
+.play json-restful-api/struct-part-2-1.go /START OMIT/,/END OMIT/
+
+Some from standard package:
+
+  func NewEncoder(w io.Writer) *Encoder
+  func NewDecoder(r io.Reader) *Decoder
+
+* Fields
+
+.play json-restful-api/struct-part-3.go
+
+* Struct with field's type struct
+
+.play json-restful-api/struct-part-4.go /START OMIT/,/END OMIT/
+
+* Methods
+
+Methods can be defined for any named type, including struct.
+
+.code json-restful-api/struct-part-5.go
+
+* Embedding
+
+.code json-restful-api/struct-part-6.go
+
+* Embedding (example)
+
+.play json-restful-api/struct-part-7.go /START OMIT/,/END OMIT/
+
+* JSON encoding/decoding
+
+* Using encoding/json package
+
+Reading and writing JSON is easy with `encoding/json` package.
+
+	func Marshal(v interface{}) ([]byte, error)
+	func Unmarshal(data []byte, v interface{}) error
+	func NewDecoder(r io.Reader) *Decoder
+	func NewEncoder(w io.Writer) *Encoder
+
+* Encode/decode JSON with Marshal/Unmarshal
+
+.play json-restful-api/json-part-1.go /START OMIT/,/END OMIT/
+
+* Encode/decode streams of JSON data
+
+.play json-restful-api/json-part-2.go /START OMIT/,/END OMIT/
+
+* Lowercase field in JSON with struct tags
+
+[[https://golang.org/ref/spec#Struct_types]]
+
+A field declaration may be followed by an optional string literal tag, which becomes an attribute for all the fields in the corresponding field declaration.
+
+.play json-restful-api/json-part-3.go /START OMIT/,/END OMIT/
+
+* Learn More about JSON in Go
+
+- [[https://golang.org/pkg/encoding/json/]]
+- [[https://blog.golang.org/json-and-go]]
+- [[https://talks.golang.org/2015/json.slide#1]]
+
+* HTTP Server
+
+* Using net/http
+
+Building HTTP server is so simple in Go. Thanks to `net/http` package.
+
+.play json-restful-api/net-http-part-1.go
+
+* Routing
+
+`net/http` has request multiplexer. Fast for fixed paths.
+
+[[https://golang.org/pkg/net/http/#ServeMux]]
+
+.play json-restful-api/net-http-part-2.go /START OMIT/,/END OMIT/
+
+* Routing
+
+No built-in way (yet?) for dynamic path like `/articles/:article-id`. You need
+to parse it from `r.URL.Path`
+
+.play json-restful-api/net-http-part-3.go /START OMIT/,/END OMIT/
+
+* Routing
+
+But it becomes tedious to write if you want certain paths are accessible via
+certain HTTP verbs
+
+   GET, POST        /articles
+   GET, PUT, DELETE /articles/:article-id:.json
+
+There are some router packages to help you on this:
+
+- [[https://github.com/julienschmidt/httprouter]]
+- [[https://github.com/bmizerany/pat]]
+- [[https://github.com/gorilla/mux]]
+
+* Routing
+
+Example using `github.com/julienschmidt/httprouter`
+
+.play json-restful-api/net-http-part-4.go /START API/,/END API/
+
+* Routing
+
+Example using `github.com/julienschmidt/httprouter`
+
+.play json-restful-api/net-http-part-4.go /START MAIN/,/END MAIN/
+
+* Middleware
+
+The idea of middleware:
+
+Shared functionality to run for each HTTP request. Simple illustration:
+
+  [req, resp] => middlewre #1 => middlewre #n => end handler
+
+Simple implementation:
+
+.code json-restful-api/net-http-part-5.go /START OMIT/,/END OMIT/
+
+* Middleware
+
+.play json-restful-api/net-http-part-5.go /START MAIN/,/END MAIN/
+
+* Middleware (CORS)
+
+[[https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS]]
+[[https://www.w3.org/TR/cors/]]
+
+A resource makes a cross-origin HTTP request when it requests a resource from a different domain than the one which the first resource itself serves.
+
+Simple example:
+
+You have API at https://api.example.com/
+You have SPA consuming the API at https://example.com/
+
+* Middleware (CORS)
+
+.code json-restful-api/net-http-part-6.go /START OMIT/,/END OMIT/
+
+* Demo of simple REST-ful JSON APIs
+
+Since I just created this slide today, I haven't had enough time to write a demo
+from scratch :p. Instead, I'll demoing what I've built in the past and discuss
+it code by code:
+
+- [[https://github.com/gedex/simdoc/]]
+- [[https://github.com/GoChallenge/gochallenge]]
+- [[https://github.com/gedex/yet-another-simple-note]]
+
+* More about JSON API
+
+- [[http://www.grpc.io/]]. [[https://github.com/kenshaw/go-jakarta/tree/master/02-gomobile-and-grpc][Ken talked about gRPC in previous meetup]]
+- See [[https://coreos.com/blog/gRPC-protobufs-swagger.html][article from CoreOS blog]] take take a REST with HTTP/2, Protobufs, and Swagger
+- See [[swagger.io]] - Standard, language-agnostic interface to REST APIs
+- See [[http://jsonapi.org/]] - Specification for building APIs in JSON
+- Learn from JSON REST API implementation like [[developer.github.com/v3/][GitHub API]]
+
+* QA
