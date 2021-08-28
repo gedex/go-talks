@@ -1,0 +1,617 @@
+Bahasa Pemrograman Go - Pengenalan
+Universitas Gunadarma
+29 Aug 2021
+
+Akeda Bagus
+
+* Lisensi dan Atribusi
+
+Berdasarkan presentasi Dave Cheney "Introduction to Go"
+
+.link http://go-talks.appspot.com/github.com/gedex/go-talks/pengenalan.slide
+
+dan Robert Griesemer "A Taste of Go"
+
+.link http://go-talks.appspot.com/code.google.com/p/go.talks/2014/taste.slide
+
+Mengikuti sumbernya, lisensi BSD akan digunakan.
+
+* Tentang Saya
+
+Hi 👋
+
+Nama saya Akeda.
+
+Saat ini bekerja sebagai software engineer di Automattic (lebih dikenal dengan
+produknya seperti WordPress.com, Tumblr, WooCommerce, Jetpack, Akisment, Gravatar,
+dan lainnya).
+
+Oh ya. Ngefan dengan bahasa Go sejak 2013.
+
+* Agenda
+
+- Lahirnya Go
+- Elemen Go
+- Konkurensi
+- Paket
+- Tools
+
+* Lahirnya Go
+
+* Lahirnya Go
+
+Diawali oleh Rob Pike, Robert Griesemer, dan Ken Thompson pada tahun 2007.
+
+.image pengenalan/tpg.png
+
+.caption Griesemer, Pike, dan Thompson (kiri ke kanan)
+
+Rob Pike menulis gambaran lengkapnya di [[http://commandcenter.blogspot.com.au/2012/06/less-is-exponentially-more.html][Less is exponentially more]].
+
+* Lahirnya Go
+
+*Observasi*
+
+- Manajemen memori manual bisa menjadi resiko keamanan (`malloc` dan `free()` di C atau `new` dan `delete` di C++)
+- Static type checking
+- Masalah _scaling_ dengan _inheritance_
+- Bahasa pemrograman kelak menjadi produk
+- CPU multi core terus berkembang
+
+* Lahirnya Go
+
+*Kesepakatan*
+
+- Compiled
+- Statically Typed
+- Garbage Collected
+- Tidak ada _inheritance_
+- Terstruktur (`packages`)
+- Dukungan _concurrency_
+- Sederhana, kecil, dan cepat
+
+* Lahirnya Go
+
+*Pengumuman* *Publik*
+
+Diumumkan secara publik pada [[https://www.youtube.com/watch?v=rKnDgT73v8s][10 November 2009]].
+
+Go merupakan proyek sumber terbuka.
+
+Semua _commit_, _code_ _review_, desain, diskusi, dan lainnya dilakukan secara terbuka
+melalui _mailing_ _list_.
+
+* Lahirnya Go
+
+*2009* *-* *2012*
+
+Iterasi cepat selama 2.5 tahun
+
+[[http://blog.golang.org/go-version-1-is-released][Go 1.0 dirilis]] 28 Maret 2012.
+
+Go 1.0 menjadi garis batas
+
+- API yang stabil. [[http://golang.org/doc/go1compat][The Go 1 compatibility document]]
+- Tidak ada perubahan bahasa secara besar
+- [[http://blog.golang.org/the-path-to-go-1][Perjalanan menuju Go 1]]
+
+Stabilitas
+
+- Pro: Kode hari ini akan tetap bekerja dengan versi terbaru Go. Dipastikan oleh tim Go disetiap _commit_.
+- Kontra: Menyulitkan penambahan fitur baru.
+
+* Lahirnya Go
+
+*2012* *-* *sekarang*
+
+Go 1.1, 1.2, 1.3, ..., 1.17
+
+Setiap rilis membawa perbaikan di _compiler_, _runtime_, dan _garbage_ _collector_.
+
+Dukungan ke platform dan arsitektur baru juga ditambahkan.
+
+* Bahasa Go
+*Hello,* *World!*
+
+.play pengenalan/hello.go
+
+# Unicode
+# Programs are organized in packages
+# A package is a set of package files
+# A package file expresses its dependencies on other packages via import declarations
+# The remainder of a package file is a list of (constant, variable, type, and function) declarations
+
+
+* Bahasa Go
+*Hello,* *World!* *Internet-style*
+
+.play pengenalan/hellohttp.go
+
+* Elemen Go
+
+* Konstanta
+
+- Presisi terjaga:
+	const e = 2.71828182845904523536028747135266249775724709369995957496696763
+	const third = 1/3
+- Opsional _typed_:
+	const M64 int64 = 1<<20
+        const M = 1<<20
+- Dievaluasi saat kompilasi:
+	const big = 1<<100 / 1e30  // valid constant expression
+
+_Compiler_ akan mencegah penggunaan konstanta yang tidak sesuai.
+
+.link http://blog.golang.org/constants
+
+* Konstanta
+
+.play pengenalan/constant.go
+
+* Variabel
+
+- _Statically_ _typed_:
+	var x int
+	var s, t string
+- Inisialisasi secara implisit atau eksplisit:
+	var x int
+	var s, t string = "foo", "bar"  // multiple assignment
+
+	var x = 42                      // int
+	var s, b = "foo", true          // string, bool
+- Deklarasi singkat (hanya dalam fungsi):
+	x := 42
+	s, b := "foo", true
+- Mendapatkan alamat variable secara aman:
+	return &x
+# compiler will do the right thing
+
+* Variabel
+
+.play pengenalan/variable.go
+
+
+* Tipe
+
+- Tipe bawaan, seperti umumnya:
+	uint8 (byte), uint16, uint32, uint32, uint64,
+	int8, int16, int32, int32 (rune), int64,
+	float32, float64,
+	complex64, complex128,
+	uint, int, uintptr,
+	bool, string,
+	error  // tidak umum
+
+- Tipe komposit:
+	array, struct, pointer, function,
+	slice, map, channel
+
+- Tipe abstrak:
+	interface
+
+
+* Deklarasi tipe
+
+- Komposisi dari kiri ke kanan (seperti Pascal):
+	[10]byte  // array of 10 bytes
+
+	struct {
+		name        string
+		left, right *Node
+		action      func(*Node)
+	}
+
+	func(a, b, c int)
+	func(http.ResponseWriter, *http.Request) error
+
+- Mendeklarasikan tipe baru:
+	type Weekday int
+
+	type Point struct {
+		x, y int
+	}
+
+	type HandlerFunc func(ResponseWriter, *Request)
+
+
+* Slices
+
+	[]T  // slice dari elemen tipe T
+
+- Deskripsi dari segmen `array`
+- Ukuran dinamis
+- Mempunyai panjang dan kapasitas
+
+Operasi umum:
+
+	len(s)
+	s[i]
+	s[i:j]
+	append(s, x)  // append element x to slice s and return new slice
+
+* Slices
+
+.play pengenalan/slice-1.go /main START/,/main END/
+
+* Slices
+
+.play pengenalan/slice-2.go /main START/,/main END/
+
+* Slices
+
+.play pengenalan/slice-3.go /main START/,/main END/
+
+* Slices
+
+.play pengenalan/slice-4.go /main START/,/main END/
+
+* Pointer
+
+- Nilai berupa alamat memori dari nilai lainnya
+- `*T` merupakan pointer dari nilai `T`.
+
+	var p *int
+
+- Operator `&` untuk menghasilkan pointer
+
+	i := 42
+	p = &i
+
+- Operator `*` untuk _dereferencing_ atau _indirecting_
+
+	fmt.Println(*p) // membaca nilai i melalui pointer p
+	*p              // merubah nilai i melalui pointer p
+
+
+* Pointer
+
+.play pengenalan/pointer.go /main START/,/main END/
+
+* Struct
+
+- Kumpulan _fields_
+
+	type Point struct {
+		X int
+		Y int
+	}
+
+- Field diakses menggunakan dot
+
+	v := Point{3, 4}
+	v.Y = 5
+
+- Dapat diakses melalui pointer
+
+* Struct
+
+.play pengenalan/struct.go /main START/,/main END/
+
+* Maps
+
+	map[K]V  // map K -> V
+
+- Hash table
+- Memetakan nilai dari kunci tipe K ke nilai tipe V
+- Operasi pemberian mengkopi referensi map
+
+Operasi umum:
+
+	make(map[K]V)
+	len(m)
+	m[k]
+	delete(m, k)
+
+- Order saat iterasi tidak ditentukan:
+
+	for key, value := range m {
+		// urutan key bisa berbeda tiap dijalankan
+	}
+
+* Maps
+
+.play pengenalan/map-1.go /main START/,/main END/
+
+* Maps
+
+.play pengenalan/map-2.go /main START/,/main END/
+
+* Statements
+
+	// multi penugasan
+	a, b = b, a                 // swap
+	f, err = os.Open(filename)
+
+	// blok if-else
+	if x < y {
+		return x
+	} else {
+		return y
+	}
+
+	// blok switch
+	switch day {
+	case Mon:
+		...
+		// break is implicit
+	case Tue, Wed:
+		...
+	}
+
+* Statements
+
+- Sintaks `for`
+
+	for {
+		// loop forever
+	}
+
+
+
+`range` mengiterasi arrays, slices, dan maps
+
+	for i, num := range numbers { ... }
+	for city, pop := range population { ... }
+
+Lainnya yang tidak dicontohkan: `break`, `goto`, `continue`, `fallthrough`
+
+* Fungsi
+
+- Fungsi reguler
+	func Sin(x float64) float64
+	func AddScale(x, y int, f float64) int
+
+- Nilai balik lebih dari satu
+	func Write(data []byte) (written int, err error)
+
+- Variadic parameter
+	func Printf(format string, args ...interface{})
+
+- _First-class_ _value_
+	var delta int
+	return func(x int) int { return x + delta }
+
+* Method
+
+Fungsi dengan parameter penerima `(p` `Point)`:
+
+.code pengenalan/point.go /String START/,/String END/
+
+Parameter penerima melekat di _base_type_ (`Point`):
+
+.code pengenalan/point.go /Point START/,/Point END/
+
+Dipanggil menggunakan dot:
+
+.play pengenalan/point.go /main START/,/main END/
+
+
+* Method dapat digunakan pada tipe kustom
+
+Pada tipe `Weekday`:
+
+.code pengenalan/weekday.go /type START/,/type END/
+
+method `String()` yang dilekatkan:
+
+.code pengenalan/weekday.go /String START/,/String END/
+
+.play pengenalan/weekday.go /main START/,/main END/
+
+* Interface
+
+- Abstrak
+- Mendefinisikan kumpulan method
+- Nilai dari tipe manapun yang mengimplementasikan method dari interface dapat diberikan ke variabel dengan interface yang sama
+
+	interface{}  // empty interface
+
+	interface {
+		String() string
+	}
+
+	interface {
+		Len() int
+		Swap(i, j int)
+		Less(i, j int) bool
+	}
+
+
+* Interface
+
+.code pengenalan/stringer.go /Stringer START/,/Stringer END/
+
+`Weekday` dan `Point` mendefinisikan method `String()`, jadi keduanya bisa ditugaskan
+ke variable dengan tipe `Stringer`:
+
+.play pengenalan/stringer.go /main START/,/main END/
+
+* Latihan
+
+Menghitung kata dari suatu kalimat.
+
+Diberikan input (string):
+
+	"foo foo bar"
+
+Hasilkan output (map):
+
+	"foo": 2
+	"bar": 1
+
+Tips: Gunakan [[https://golang.org/pkg/strings/#Fields][strings.Fields]].
+
+* Konkurensi
+
+* Goroutines
+
+- _Lightweight_ _thread_ yang diatur Go _runtime_
+
+	go f(x, y, z)
+
+- Statement `go` akan memulai goroutine menjakan fungsi `f()`
+
+
+* Contoh
+
+.code pengenalan/concurrency1.go /f START/,/f END/
+
+Fungsi `f` dijalankan sebagai 3 goroutine yang berbeda, ketiganya berjalan
+secara konkuren:
+
+.play pengenalan/concurrency1.go /main START/,/main END/
+
+
+* Komunikasi melalui channel
+
+Terdiri dari tipe nilai (dan arah komunikasi)
+
+	chan int
+	chan<- string  // send-only channel
+	<-chan T       // receive-only channel
+
+Variabel dengan tipe `channel`:
+
+	var ch chan int
+	ch := make(chan int)  // declare and initialize with newly made channel
+
+Dapat untuk mengirim dan menerima nilai:
+
+	ch <- 1   // mengirim nilai 1 ke channel ch
+	x = <-ch  // menerima nilai dari channel ch (dan ditugaskan ke x)
+
+Digunakan untuk mengsinkronisasi antar goroutine
+
+* Komunikasi antar goroutine
+
+Setiap goroutine mengirimkan nilai melalui channel `ch`:
+
+.code pengenalan/concurrency2.go /f START/,/f END/
+
+goroutine utama menerima (dan mencetak) semua nilai dari channel `ch`:
+
+.play pengenalan/concurrency2.go /main START/,/main END/
+
+* Latihan
+
+Lempar dadu dengan total mata dadu
+
+Contoh output:
+
+	0 A = 1; total = 1
+	1 B = 3; total = 3
+	2 B = 6; total = 9
+	2 B = 1; total = 10
+	...
+	100 A = 5; total = 100
+
+* Paket
+
+* Paket
+
+- Setiap kode Go merupakan bagian dari sebuah paket
+- Setiap berkas Go diawali dengan _statement_ `package`
+- Paket yang diimpor dirujuk sesuai prefix dari nama paket
+
+	package main
+
+	import "fmt"
+
+	func main() {
+		fmt.Printf("Hello %s\n", "world)
+	}
+
+* Contoh paket: fmt
+
+.code pengenalan/fmt.go
+
+- Fungsi `Println` diekspor karena diawali dengan huruf besar. Paket yang
+  mengimpor dapat memanggilnya
+- Fungsi `newPrinter` tidak diekspor karena diawali dengan huruf kecil. Paket
+  yang mengimpor tidak dapat memanggilnya dan hanya bisa dipanggil dari paket
+  `fmt` saja
+
+* Standard Library
+
+Paket bawaan dari Go
+
+`database`, `fmt`, `net/http`, `encoding/json`, dan lainnya
+
+.link https://pkg.go.dev/std
+
+* Paket net/http
+
+Untuk implementasi HTTP client dan server
+
+* net/http client
+
+.play pengenalan/net_http_client.go
+
+* encoding/json
+
+.play pengenalan/json.go
+
+* Latihan
+
+Buat CLI untuk mengetahui data covid-19
+
+Misal:
+
+	$ covid-cli id
+    Terkonfirmasi: 4,066,404
+    Meninggal: 131,372
+	Terakhir diupdate: 2021-08-28T21:21:28.000Z
+
+* Tools
+
+* Tools
+
+`/usr/bin/go`
+
+Build tool yang sederhana, tanpa konfigurasi
+
+Semua perintah dan paths relatif ke [[http://golang.org/doc/code.html#GOPATH][$GOPATH]] workspace.
+Mendukung kompilasi kondisional melalui suffix dan build tags
+
+Mendukung lintas kompilasi
+
+	GOARCH=386 GOOS=windows go build mycmd
+
+* Tools
+
+Membaca dokumentasi paket
+
+	godoc $PKG
+
+Linting
+
+	go vet $PKG
+
+Format kode
+
+	go fmt $PKG
+
+Built-in [[http://golang.org/pkg/testing/][testing framework]], benchmarking, dan [[http://blog.golang.org/cover][coverage reports]]
+
+	go test $PKG
+	go test -cover $PKG
+
+Built-in [[http://blog.golang.org/race-detector][race detector]] (dengan [[https://code.google.com/p/data-race-test/wiki/ThreadSanitizer][ThreadSantizer]])
+
+	go {build,test,install} -race $PKG
+
+* Tertarik?
+
+Mulai dengan tur Go, [[https://tour.golang.org][tour.golang.org]]
+
+[[http://golang.org/doc/effective_go.html][Effective Go]]
+
+[[https://pkg.go.dev/std][Standard library]]
+
+
+* Pertanyaan?
+
+Slide dapat diakses
+
+.link http://talks.godoc.org/github.com/gedex/go-talks/pengenalan.slide
+
