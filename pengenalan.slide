@@ -525,11 +525,8 @@ Contoh output:
 
 .code pengenalan/fmt.go
 
-- Fungsi `Println` diekspor karena diawali dengan huruf besar. Paket yang
-  mengimpor dapat memanggilnya
-- Fungsi `newPrinter` tidak diekspor karena diawali dengan huruf kecil. Paket
-  yang mengimpor tidak dapat memanggilnya dan hanya bisa dipanggil dari paket
-  `fmt` saja
+- Fungsi `Println` diekspor karena diawali dengan huruf besar. Paket yang mengimpor dapat memanggilnya
+- Fungsi `newPrinter` tidak diekspor karena diawali dengan huruf kecil. Paket yang mengimpor tidak dapat memanggilnya dan hanya bisa dipanggil dari paket `fmt` saja
 
 * Standard Library
 
